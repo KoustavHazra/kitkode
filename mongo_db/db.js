@@ -4,7 +4,7 @@
 const mongoose = require('mongoose');
 
 // const URI = process.env.MONGODB_URI;
-const MONGODB_URI = 'mongodb+srv://hazrakoustav12:<your_password>@cluster0.hxfd2l5.mongodb.net/kitkode?retryWrites=true&w=majority&appName=Cluster0'
+const MONGODB_URI = 'mongodb+srv://<your_username>:<your_password>@mongo_db_url_from_atlas'
 
 
 const connectDb = async () => {
