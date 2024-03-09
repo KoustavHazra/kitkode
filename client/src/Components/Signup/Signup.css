@@ -1,4 +1,4 @@
-#signup {
+/* #signup {
     min-height: 100%;
 }
 
@@ -26,4 +26,81 @@
     position: absolute;
     right: 100px;
     padding: 0.3rem;
-}
+} */
+
+
+
+/* Signup.css */
+
+#signup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f1f1f1;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+  }
+  
+  .grid-two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .registration-image {
+    text-align: center;
+  }
+  
+  .registration-image img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .signup-form {
+    background-color: #f1f1f1;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .signup-form h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .subform {
+    margin-bottom: 10px;
+  }
+  
+  .subform label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .subform input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  button {
+    width: 60%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: 0.1rem solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    /* letter-spacing: 0.1rem; */
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  

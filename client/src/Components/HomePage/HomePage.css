@@ -1,17 +1,82 @@
-.blog-box {
-    border: 1px solid grey;
+/* General styles */
+* {
+    color-scheme: light;
+}
+
+.grid {
+    display: grid;
+    gap: 6.4rem;
+}
+
+.grid-two-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.home-page {
+    padding: 20px;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  /* Blog styles */
+  .blogs-container {
+    width: 70%;
+  }
+  
+  .blog-box {
+    border: 1px solid #ddd;
+    border-radius: 5px;
     padding: 1rem;
-}
-.date {
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .blog-box:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .date {
     font-weight: 100;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     margin: 0;
-}
-
-.title {
+    color: #888;
+  }
+  
+  .title {
     margin: 10px 0;
-}
-
-.content {
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .content {
     margin: 5px 0;
-}
+    color: #666;
+  }
+  
+  /* Problem box styles */
+  .problems-container {
+    width: 50%;
+  }
+  
+  .problems-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .problem-box {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .problem-box:hover {
+    background-color: #f0f0f0;
+  }
+  

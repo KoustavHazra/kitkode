@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+  padding: 0;
+  padding-bottom: 50px; /* Add padding to the bottom of the body */
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30px; /* Change the height as needed */
+  background-color: #333;
+  color: white;
+  padding: 10px 0;
+  text-align: center;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-show {
+  transform: translateY(0);
+}

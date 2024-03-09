@@ -1,17 +1,47 @@
+// require("dotenv").config();
+
 const express = require('express');
+const connectDb = require('../mongo_db/db');
+const authRoute = require('./routes/auth-route');
+const contactRoute = require('./routes/contact-route');
+const adminRoute = require('./routes/admin-route');
+const errorMiddleware = require('./middleware/error-middleware');
+const cors = require("cors");  // to handle cors error
+const cookieParser = require("cookie-parser");
+
 const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
 const app = express();
 const port = 3000;
-const JWT_SECRET = "secret";
 const { auth } = require("./middleware");
-let USER_ID_COUNTER = 1;
-const cors = require("cors");
-app.use(cors());
 
-// Middleware to parse JSON bodies
-app.use(bodyParser.json());
+
+app.use(bodyParser.json());  // Middleware to parse JSON bodies
+
+app.use(cookieParser());
+
+connectDb().then(() => {
+  app.listen(port, function() {
+    console.log(`Example app listening on port ${port}`)
+  });
+});
+
+// cors handling
+const corsOptions = {
+  origin: "http://localhost:5173",
+  methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+// routing ( always after handling cors )
+app.use(express.json());
+app.use(errorMiddleware);
+app.use("/api/auth", authRoute);
+app.use("/api/form", contactRoute);
+app.use("/api/admin", adminRoute);
 
 /*
  * Temporary problems array schema
@@ -98,188 +128,165 @@ const PROBLEMS = [
 
 const SUBMISSIONS = [];
 
-const USERS = [];
+// const USERS = [];
 
-app.get('/', (req, res) => {
-    res.json({
-        message: "hello kitkode!"
-    })
-})
-
-
-app.post('/signup', async function(req, res) {
-    const email = req.body.email;
-    const password = req.body.password;
-    
-
-    try {
-        const userExists = USERS.find(user => user.email === email);
-        if (userExists) {
-            res.status(400).json({ message: 'User with the email already exists.' });
-        }
-
-        // // hashing the password
-        // const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create a new user and add to the USERS array
-        USERS.push({ email, password, id: USER_ID_COUNTER++ });
-
-        // // Generate JWT
-        // const token = generateToken(newUser.email);
-        
-        // // Send JWT in a cookie
-        // res.cookie('jwt', token, { httpOnly: true });
-        
-        // // Send the JWT as a response
-        // res.json({ message: 'User signed up successfully.', token });
-
-        console.log(`User signed up: ${email}`);
-        return res.json({ message: "User signed up successfully." });
-        // Check if the user with the given email already exists
-    } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-
-});
-
-app.post('/login', async function(req, res) {
-    const email = req.body.email;
-    const password = req.body.password;
-    try {
-        // find the users in the USERS array
-        const user = USERS.find(user => user.email === email);
-        if (!user) {
-            res.status(400).json({ message: 'User not found.' });
-        }
-
-        // verify the password
-        if (user.password !== password) {
-            return res.status(403).json({ msg: "Incorrect password" });
-        }
-
-        // Generate JWT -- handle error if jwt token is wrong while using
-        const token = jwt.sign({ 
-                    id: user.id }, 
-                    JWT_SECRET, 
-                    { expiresIn: '1h' });
-        
-        // Send the JWT as a response
-        console.log(`User logged in: ${email}`);
-        return res.json({ message: 'User logged in successfully.', token });
-        
-    } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ message: 'Internal server error.' });
-    }
-});
-
-
-app.get('/protected', auth, (req, res) => {
-    res.json({ message: 'Protected route accessed successfully', user: req.user });
-});
-
-
-app.post('/logout', function(req, res) {
-    // Clear the token cookie by setting an expired token
-    res.cookie('jwt', '', { expires: new Date(0), httpOnly: true });
-    res.json({ message: 'Logged out successfully' });
-});
-
-
-
-app.get('/problems', (req, res) => {
-    // returns the user all the problem questions from PROBLEMS array
-    const filteredProblems = PROBLEMS.map(x => ({
-        problemId: x.problemId,
-        title: x.title,
-        difficulty: x.difficulty,
-        acceptance: x.acceptance
-    }));
-
-    res.json({
-        problems: filteredProblems
-    });
-});
-
-app.get('/problems/:id', (req, res) => {
-    const id = req.params.id;
-    const problem = PROBLEMS.find((x) => x.problemId === id);
-    if (!problem) {
-        return res.status(404).json({ message: 'Problem not found' });
-      }
-    res.json({ problem });
-});
-
-app.get('/me', auth, (req, res) => {
-    const user = USERS.find((x) => x.id === req.userId);
-    res.json({ email: user.email, id: user.id });
-});
-    
-
-// app.get('/submissions', auth, function(req, res) {
-//     // returns the user submissions for this problem
-//     const userSubmissions = SUBMISSIONS.filter(submission => submission.email === req.user.email);
-//     res.json(userSubmissions);
+// app.get('/', (req, res) => {
+//     res.json({
+//         message: "hello kitkode!"
+//     })
 // })
 
-app.post('/submissions', auth, function(req, res) {
-    const isCorrect = Math.random() < 0.5;
-    const problemId = req.body.problemId;
-    const submission = req.body.submission;
-    const submissionTime = new Date(); // Get the current time
 
-    if (isCorrect) {
-        SUBMISSIONS.push({
-        submission,
-        problemId,
-        userId: req.userId,
-        status: "Accepted",
-        submissionTime: submissionTime // Include submission time
-        });
-        return res.json({
-          status: "Accepted",
-        });
-    } else {
-        SUBMISSIONS.push({
-        submission,
-        problemId,
-        userId: req.userId,
-        status: "Rejected",
-        submissionTime: submissionTime // Include submission time
-        });
-        return res.json({
-          status: "Rejected",
-        });
-    }
-});
+// app.post('/signup', async function(req, res) {
+//     const username = req.body.username;
+//     const email = req.body.email;
+//     const password = req.body.password;
 
-app.get("/submissions/:problemId", auth, (req, res) => {
-  const problemId = req.params.problemId;
+//     try {
+//         const userExists = await User.findOne({ email: email });
+//         if (userExists) {
+//             res.status(400).json({ message: 'User with the email already exists.' });
+//         }
 
-  const submissions = SUBMISSIONS.filter(
-    (x) => x.problemId === problemId // && x.userId === req.userId
-  );
-  console.log("Filtered Submissions:", submissions);
-  res.json({ "Filtered Submissions" : submissions });
-});
+//         const newUser = await User.create({ username, email, password });
+        
+//         console.log(`User signed up: ${newUser.email}`);
+//         return res.status(201).json({ message: "User signed up successfully.", 
+//                           token: await newUser.generateToken(),
+//                           userId: newUser._id.toString() });
 
-// other routes to create:
-    // 1. leaving as hard todos
-
-// Route to add a new problem (only accessible to admins)
-// app.post('/add_problem', auth, function(req, res) {
-//     const { title, description, testcases } = req.body;
-//     // Check if the user is an admin (for demonstration purposes, consider admin email hardcoded)
-//     if (req.user.email !== 'hazrakoustav12@gmail.com') {
-//         return res.status(403).json({ message: 'Only admins can add problems' });
+//     } catch (error) {
+//         console.error('Error during login:', error);
+//         res.status(500).json({ message: 'Internal server error' });
 //     }
-//     const newProblem = { title, description, testcases };
-//     PROBLEMS.push(newProblem);
-//     res.json({ message: 'Problem added successfully' });
 // });
 
-app.listen(port, function() {
-  console.log(`Example app listening on port ${port}`)
-})
+
+// app.post('/login', async function(req, res) {
+//     const email = req.body.email;
+//     const password = req.body.password;
+
+//     try {
+//         // find the users in the USERS array
+//         // const user = USERS.find(user => user.email === email);
+//         const user = await User.findOne({ email: email });
+//         console.log(user);
+
+//         if (!user) {
+//             res.status(400).json({ message: 'User not found.' });
+//         }
+
+//         // verify the password
+//         // if (user.password !== password) {
+//         //     return res.status(403).json({ msg: "Incorrect password" });
+//         // }
+//         // const validPassword = await bcrypt.compare(password, user.password);
+//         const validPassword = await user.comparePassword(password);
+//         if (validPassword) {
+//           console.log(`User logged in: ${email}`);
+//           res.status(201).json({ message: "User logged in successfully.", 
+//                                 token: await user.generateToken(),
+//                                 userId: user._id.toString() });
+//         } else {
+//           res.status(401).json({ message: 'Unauthorized to login.'})
+//         }
+        
+//         // Send the JWT as a response
+//         // return res.json({ message: 'User logged in successfully.', token });
+        
+//     } catch (error) {
+//         console.error('Error during login:', error);
+//         res.status(500).json({ message: 'Internal server error.' });
+//     }
+// });
+
+
+// app.get('/protected', auth, (req, res) => {
+//     res.json({ message: 'Protected route accessed successfully', user: req.user });
+// });
+
+
+// app.post('/logout', function(req, res) {
+//     // Clear the token cookie by setting an expired token
+//     res.cookie('jwt', '', { expires: new Date(0), httpOnly: true });
+//     res.json({ message: 'Logged out successfully' });
+// });
+
+
+
+// app.get('/problems', (req, res) => {
+//     // returns the user all the problem questions from PROBLEMS array
+//     const filteredProblems = PROBLEMS.map(x => ({
+//         problemId: x.problemId,
+//         title: x.title,
+//         difficulty: x.difficulty,
+//         acceptance: x.acceptance
+//     }));
+
+//     res.json({
+//         problems: filteredProblems
+//     });
+// });
+
+// app.get('/problems/:id', (req, res) => {
+//     const id = req.params.id;
+//     const problem = PROBLEMS.find((x) => x.problemId === id);
+//     if (!problem) {
+//         return res.status(404).json({ message: 'Problem not found' });
+//       }
+//     res.json({ problem });
+// });
+
+// app.get('/me', auth, (req, res) => {
+//     const user = USERS.find((x) => x.id === req.userId);
+//     res.json({ email: user.email, id: user.id });
+// });
+    
+
+// app.post('/submissions', auth, function(req, res) {
+//     const isCorrect = Math.random() < 0.5;
+//     const problemId = req.body.problemId;
+//     const submission = req.body.submission;
+//     const submissionTime = new Date(); // Get the current time
+
+//     if (isCorrect) {
+//         SUBMISSIONS.push({
+//         submission,
+//         problemId,
+//         userId: req.userId,
+//         status: "Accepted",
+//         submissionTime: submissionTime // Include submission time
+//         });
+//         return res.json({
+//           status: "Accepted",
+//         });
+//     } else {
+//         SUBMISSIONS.push({
+//         submission,
+//         problemId,
+//         userId: req.userId,
+//         status: "Rejected",
+//         submissionTime: submissionTime // Include submission time
+//         });
+//         return res.json({
+//           status: "Rejected",
+//         });
+//     }
+// });
+
+// app.get("/submissions/:problemId", auth, (req, res) => {
+//   const problemId = req.params.problemId;
+
+//   const submissions = SUBMISSIONS.filter(
+//     (x) => x.problemId === problemId // && x.userId === req.userId
+//   );
+//   console.log("Filtered Submissions:", submissions);
+//   res.json({ "Filtered Submissions" : submissions });
+// });
+
+
+
+
+
+
 

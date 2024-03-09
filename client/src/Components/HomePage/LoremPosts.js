@@ -32,7 +32,7 @@ const loremContent = [
     {
         title : "Is Python the real chad or Javascript",
         date : "15 Feb 2023",
-        content : "Its like asking is IronMan better than Thor or Captain America"
+        content : "Its like asking if IronMan is better than Thor or Captain America"
     },
 ]
 
