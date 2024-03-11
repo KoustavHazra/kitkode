@@ -15,7 +15,7 @@ KitKode is a clone of the popular LeetCode platform, designed to help users prac
 
 - **Frontend:** HTML, CSS, JavaScript, React.js
 - **Backend:** Node.js, Express.js, MongoDB
-- **Authentication:** JSON Web Tokens (JWT)
+- **Authentication:** JSON Web Tokens (JWT), HTTP-only cookie
 - **Version Control:** Git, GitHub
 
 ## Getting Started
